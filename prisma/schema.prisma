@@ -7,63 +7,115 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum QuestionType {
+  SINGLE_CHOICE
+  LIKE_DISLIKE
+  SCALE
+  FORCED_CHOICE
+}
+
+enum ModuleStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+}
+
 model User {
-  id          Int          @id @default(autoincrement())
-  name        String
-  email       String       @unique
-  password    String
-  testResults TestResult[]
+  id           Int                  @id @default(autoincrement())
+  name         String
+  email        String               @unique
+  password     String
+  userAnswers  UserAnswer[]
+  progress     UserModuleProgress[]
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+}
+
+model AssessmentModule {
+  id          Int                  @id @default(autoincrement())
+  code        String               @unique
+  title       String
+  description String
+  sortOrder   Int
+  isActive    Boolean              @default(true)
+  questions   Question[]
+  progress    UserModuleProgress[]
   userAnswers UserAnswer[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
 }
 
 model Question {
-  id        Int            @id @default(autoincrement())
-  text      String
-  category  String
-  options   AnswerOption[]
-  answers   UserAnswer[]
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
+  id          Int              @id @default(autoincrement())
+  moduleId    Int
+  text        String
+  description String?
+  order       Int
+  type        QuestionType
+  metadata    Json?
+  module      AssessmentModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  options     AnswerOption[]
+  answers     UserAnswer[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@unique([moduleId, order])
 }
 
 model AnswerOption {
-  id         Int      @id @default(autoincrement())
-  text       String
-  score      Int
+  id         Int       @id @default(autoincrement())
   questionId Int
-  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-}
+  text       String
+  value      String?
+  order      Int
+  weights    Json
+  question   Question  @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  answers    UserAnswer[]
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
-model TestResult {
-  id            Int          @id @default(autoincrement())
-  userId        Int
-  summary       String
-  dominantField String
-  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  @@unique([questionId, order])
 }
 
 model UserAnswer {
-  id             Int      @id @default(autoincrement())
+  id             Int              @id @default(autoincrement())
   userId         Int
+  moduleId       Int
   questionId     Int
   answerOptionId Int
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  question       Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  module         AssessmentModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  question       Question         @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  answerOption   AnswerOption     @relation(fields: [answerOptionId], references: [id], onDelete: Cascade)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@unique([userId, questionId])
+  @@index([userId, moduleId])
+}
+
+model UserModuleProgress {
+  id             Int              @id @default(autoincrement())
+  userId         Int
+  moduleId       Int
+  status         ModuleStatus     @default(NOT_STARTED)
+  scoreBreakdown Json?
+  completedAt    DateTime?
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  module         AssessmentModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@unique([userId, moduleId])
 }
 
 model Profession {
-  id            Int      @id @default(autoincrement())
-  name          String
-  description   String
-  category      String
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String
+  category    String
+  weights     Json
+  tags        String[] @default([])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
