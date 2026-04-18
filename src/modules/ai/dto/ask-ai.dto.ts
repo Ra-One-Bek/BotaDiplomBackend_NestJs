@@ -4,5 +4,5 @@ export class AskAiDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(500)
-  question: string;
+  question!: string;
 }
