@@ -4,30 +4,94 @@ const prisma = new PrismaClient();
 
 async function createQuestion(params: {
   moduleId: number;
+
   order: number;
+
   text: string;
+  textRu?: string;
+  textKk?: string;
+  textEn?: string;
+
   type: QuestionType;
+
   options: Array<{
     text: string;
+
+    textRu?: string;
+    textKk?: string;
+    textEn?: string;
+
     value?: string;
     order: number;
     weights: Record<string, number>;
   }>;
+
   description?: string;
+  descriptionRu?: string;
+  descriptionKk?: string;
+  descriptionEn?: string;
+
   metadata?: Record<string, unknown>;
 }) {
-  const { moduleId, order, text, type, options, description, metadata } = params;
+  const {
+  moduleId,
+  order,
+
+  text,
+  textRu,
+  textKk,
+  textEn,
+
+  type,
+
+  options,
+
+  description,
+  descriptionRu,
+  descriptionKk,
+  descriptionEn,
+
+  metadata
+  } = params;
 
   await prisma.question.create({
     data: {
       moduleId,
       order,
+
       text,
+
+      textRu: textRu ?? text,
+      textKk,
+      textEn,
+
       type,
+
       description,
+
+      descriptionRu:
+          descriptionRu ?? description,
+
+      descriptionKk,
+      descriptionEn,
+
       metadata: metadata as any,
+
       options: {
-        create: options,
+        create: options.map((option)=>({
+
+          ...option,
+
+          textRu:
+              option.textRu ?? option.text,
+
+          textKk:
+              option.textKk,
+
+          textEn:
+              option.textEn,
+
+        })),
       },
     },
   });
@@ -107,7 +171,7 @@ if (!interestsModule) {
   throw new Error('interests module not found');
 }
 
-  await createQuestion({
+    await createQuestion({
     moduleId: temperamentModule.id,
     order: 1,
     text: 'Какой у вас характер?',

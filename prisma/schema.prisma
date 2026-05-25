@@ -43,6 +43,12 @@ model AssessmentModule {
   userAnswers UserAnswer[]
   createdAt   DateTime             @default(now())
   updatedAt   DateTime             @updatedAt
+  titleRu       String?
+  titleKk       String?
+  titleEn       String?
+  descriptionRu String?
+  descriptionKk String?
+  descriptionEn String?
 }
 
 model Question {
@@ -58,6 +64,12 @@ model Question {
   answers     UserAnswer[]
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
+  textRu        String?
+  textKk        String?
+  textEn        String?
+  descriptionRu String?
+  descriptionKk String?
+  descriptionEn String?
 
   @@unique([moduleId, order])
 }
@@ -73,6 +85,9 @@ model AnswerOption {
   answers    UserAnswer[]
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
+  textRu        String?
+  textKk        String?
+  textEn        String?
 
   @@unique([questionId, order])
 }

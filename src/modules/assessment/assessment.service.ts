@@ -15,14 +15,39 @@ export class AssessmentService {
 
   async getModules() {
     const modules = await this.prisma.assessmentModule.findMany({
-      where: { isActive: true },
-      orderBy: { sortOrder: 'asc' },
+      where: {
+        isActive: true,
+      },
+
       select: {
         id: true,
         code: true,
+
         title: true,
+        titleRu: true,
+        titleKk: true,
+        titleEn: true,
+
         description: true,
+        descriptionRu: true,
+        descriptionKk: true,
+        descriptionEn: true,
+
         sortOrder: true,
+        createdAt: true,
+        updatedAt: true,
+
+        progress: {
+          select: {
+            status: true,
+            scoreBreakdown: true,
+            completedAt: true,
+          },
+        },
+      },
+
+      orderBy: {
+        sortOrder: 'asc',
       },
     });
 
@@ -33,9 +58,26 @@ export class AssessmentService {
     await this.ensureUserExists(userId);
 
     const modules = await this.prisma.assessmentModule.findMany({
-      where: { isActive: true },
-      orderBy: { sortOrder: 'asc' },
-      include: {
+      where: {
+        isActive: true,
+      },
+
+      select: {
+        id: true,
+        code: true,
+
+        title: true,
+        titleRu: true,
+        titleKk: true,
+        titleEn: true,
+
+        description: true,
+        descriptionRu: true,
+        descriptionKk: true,
+        descriptionEn: true,
+
+        sortOrder: true,
+
         progress: {
           where: { userId },
           select: {
@@ -45,6 +87,10 @@ export class AssessmentService {
           },
         },
       },
+
+      orderBy: {
+        sortOrder: 'asc',
+      },
     });
 
     const items = modules.map((module) => {
@@ -53,8 +99,17 @@ export class AssessmentService {
       return {
         id: module.id,
         code: module.code,
+
         title: module.title,
+        titleRu: module.titleRu,
+        titleKk: module.titleKk,
+        titleEn: module.titleEn,
+
         description: module.description,
+        descriptionRu: module.descriptionRu,
+        descriptionKk: module.descriptionKk,
+        descriptionEn: module.descriptionEn,
+
         sortOrder: module.sortOrder,
         status: progress?.status ?? 'NOT_STARTED',
         completedAt: progress?.completedAt ?? null,
@@ -76,6 +131,19 @@ export class AssessmentService {
   async getModuleQuestions(moduleCode: string) {
     const module = await this.prisma.assessmentModule.findUnique({
       where: { code: moduleCode },
+      select: {
+        id: true,
+        code: true,
+        title: true,
+        titleRu: true,
+        titleKk: true,
+        titleEn: true,
+        description: true,
+        descriptionRu: true,
+        descriptionKk: true,
+        descriptionEn: true,
+        isActive: true,
+      },
     });
 
     if (!module || !module.isActive) {
@@ -83,14 +151,45 @@ export class AssessmentService {
     }
 
     const questions = await this.prisma.question.findMany({
-      where: { moduleId: module.id },
-      orderBy: { order: 'asc' },
-      include: {
+      where: {
+        moduleId: module.id,
+      },
+
+      orderBy: {
+        order: 'asc',
+      },
+
+      select: {
+        id: true,
+        moduleId: true,
+
+        text: true,
+        textRu: true,
+        textKk: true,
+        textEn: true,
+
+        description: true,
+        descriptionRu: true,
+        descriptionKk: true,
+        descriptionEn: true,
+
+        order: true,
+        type: true,
+        metadata: true,
+
         options: {
-          orderBy: { order: 'asc' },
+          orderBy: {
+            order: 'asc',
+          },
+
           select: {
             id: true,
+
             text: true,
+            textRu: true,
+            textKk: true,
+            textEn: true,
+
             value: true,
             order: true,
           },
@@ -102,10 +201,33 @@ export class AssessmentService {
       module: {
         id: module.id,
         code: module.code,
+
         title: module.title,
+        titleRu: module.titleRu,
+        titleKk: module.titleKk,
+        titleEn: module.titleEn,
+
         description: module.description,
+        descriptionRu: module.descriptionRu,
+        descriptionKk: module.descriptionKk,
+        descriptionEn: module.descriptionEn,
       },
-      questions,
+      questions: questions.map((question) => ({
+        id: question.id,
+        moduleId: question.moduleId,
+        text: question.text,
+        textRu: question.textRu,
+        textKk: question.textKk,
+        textEn: question.textEn,
+        description: question.description,
+        descriptionRu: question.descriptionRu,
+        descriptionKk: question.descriptionKk,
+        descriptionEn: question.descriptionEn,
+        order: question.order,
+        type: question.type,
+        metadata: question.metadata,
+        options: question.options,
+      })),
     };
   }
 
@@ -123,10 +245,39 @@ export class AssessmentService {
       where: { code: moduleCode },
       include: {
         questions: {
-          include: {
-            options: true,
+          select: {
+            id: true,
+            moduleId: true,
+
+            text: true,
+            textRu: true,
+            textKk: true,
+            textEn: true,
+
+            description: true,
+            descriptionRu: true,
+            descriptionKk: true,
+            descriptionEn: true,
+
+            order: true,
+            type: true,
+            metadata: true,
+
+            options: {
+              select: {
+                id: true,
+
+                text: true,
+                textRu: true,
+                textKk: true,
+                textEn: true,
+
+                value: true,
+                order: true,
+                weights: true,
+              },
+            },
           },
-          orderBy: { order: 'asc' },
         },
       },
     });

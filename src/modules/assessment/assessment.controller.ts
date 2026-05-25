@@ -28,7 +28,9 @@ export class AssessmentController {
   }
 
   @Get('modules/:moduleCode/questions')
-  getModuleQuestions(@Param('moduleCode') moduleCode: string) {
+  getModuleQuestions(
+    @Param('moduleCode') moduleCode: string,
+  ) {
     return this.assessmentService.getModuleQuestions(moduleCode);
   }
 
