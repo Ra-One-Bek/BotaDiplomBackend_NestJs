@@ -10,6 +10,7 @@ import { UsersModule } from './modules/users/users.module';
 import { ProfessionsModule } from './modules/professions/professions.module';
 import { AiModule } from './modules/ai/ai.module';
 import { AssessmentModule } from './modules/assessment/assessment.module';
+import { UniversitiesModule } from './modules/universities/universities.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { AssessmentModule } from './modules/assessment/assessment.module';
     ProfessionsModule,
     AiModule,
     AssessmentModule,
+    UniversitiesModule,
   ],
   providers: [PrismaService],
 })

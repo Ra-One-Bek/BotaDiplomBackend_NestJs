@@ -134,3 +134,33 @@ model Profession {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+
+model University {
+  id          Int                @id @default(autoincrement())
+  name        String             @unique
+  city        String
+  description String?
+  website     String?
+  rating      Float              @default(0)
+  reviews     UniversityReview[]
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+}
+
+model UniversityReview {
+  id           Int        @id @default(autoincrement())
+  universityId Int
+  author       String?
+  rating       Float?
+  text         String
+  source       String
+  sourceUrl    String?
+  externalId   String?
+  publishedAt  DateTime?
+  university   University @relation(fields: [universityId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@unique([universityId, source, text])
+  @@index([universityId])
+}
